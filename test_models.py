@@ -11,10 +11,10 @@ from models.review import Review
 # my_model = BaseModel()
 # my_model = User()
 # my_model = Place()
-# my_model = State()
+my_model = State()
 # my_model = City()
 # my_model = Amenity()
-my_model = Review()
+#my_model = Review()
 
 my_model.name = "My First Model"
 my_model.my_number = 89
@@ -22,7 +22,7 @@ print(my_model)
 
 print('<---->')
 my_model.save()
-print(storage._FileStorage__objects.get(
+print(storage.all().get(
     f"{my_model.__class__.__name__}.{my_model.id}"))
 print(my_model)
 
@@ -37,7 +37,7 @@ for key in my_model_json.keys():
                                    type(my_model_json[key]),
                                    my_model_json[key]))
 
-print('<---->')
-my_model.delete()
-print(storage._FileStorage__objects.get(
-    f"{my_model.__class__.__name__}.{my_model.id}"))
+# print('<---->')
+# my_model.delete()
+# print(storage._FileStorage__objects.get(
+#    f"{my_model.__class__.__name__}.{my_model.id}"))
