@@ -10,32 +10,36 @@ from uuid import uuid4
 
 @app_views.route("/states", methods=["GET", "POST"], strict_slashes=False)
 def states():
-    """ Returns State objects """
+    """ Returns or creates State objects """
     storage = get_storage()
     list_objects = []
     new_list_objects = []
     try:
-        if storage is not None:
-            if request.method == "GET":
-                list_objects.extend(storage.all(State).values())
-                for obj in list_objects:
-                    new_list_objects.append(obj.to_dict())
-                return jsonify(new_list_objects)
-            elif request.method == "POST":
-                if not request.is_json:
-                    abort(make_response(jsonify({"error": "Not a JSON"}), 400))
-                req = request.get_json()
-                if req.get("name") is None:
-                    abort(make_response(
-                        jsonify({"error": "Missing name"}), 400))
-                if req.get("id") is None:
-                    state_id = str(uuid4())
-                    req.update({"id": state_id})
-                else:
-                    state_id = req.get("id")
-                storage.new(State(**req))
-                storage.save()
-                return jsonify(storage.get(State, state_id).to_dict()), 201
+        if storage is None or not isinstance(
+                state_id, str) or storage.get(State, state_id) is None:
+            abort(404)
+        if request.method == "GET":
+            list_objects.extend(storage.all(State).values())
+            if len(list_objects) == 0:
+                abort(404)
+            for obj in list_objects:
+                new_list_objects.append(obj.to_dict())
+            return jsonify(new_list_objects)
+        elif request.method == "POST":
+            if not request.is_json:
+                abort(make_response(jsonify({"error": "Not a JSON"}), 400))
+            req = request.get_json()
+            if req.get("name") is None:
+                abort(make_response(
+                    jsonify({"error": "Missing name"}), 400))
+            if req.get("id") is None:
+                state_id = str(uuid4())
+                req.update({"id": state_id})
+            else:
+                state_id = req.get("id")
+            storage.new(State(**req))
+            storage.save()
+            return jsonify(storage.get(State, state_id).to_dict()), 201
     except BaseException:
         raise
 
@@ -43,27 +47,29 @@ def states():
 @app_views.route("/states/<state_id>",
                  methods=["GET", "PUT", "DELETE"], strict_slashes=False)
 def get_state(state_id):
-    """ Performs the operation from method on the state from given state id """
+    """ Performs the operation from method on the State from given state id """
     storage = get_storage()
     try:
-        if storage is not None:
-            state_object = storage.get(State, state_id)
-            if state_object is None or not isinstance(state_id, str):
-                raise
-            if request.method == "GET":
-                return jsonify(state_object.to_dict())
-            elif request.method == "PUT":
-                if not request.is_json:
-                    abort(make_response(jsonify({"error": "Not a JSON"}), 400))
-                req = request.get_json()
-                for k, v in req.items():
-                    if k != "id" and k != "created_at" and k != "updated_at":
-                        setattr(state_object, k, v)
-                storage.save()
-                return jsonify(state_object.to_dict()), 200
-            elif request.method == "DELETE":
-                storage.delete(state_object)
-                storage.save()
-                return jsonify({}), 200
+        if storage is None or not isinstance(
+                state_id, str) or storage.get(State, state_id) is None:
+            abort(404)
+        state_object = storage.get(State, state_id)
+        if state_object is None or not isinstance(state_id, str):
+            raise
+        if request.method == "GET":
+            return jsonify(state_object.to_dict())
+        elif request.method == "PUT":
+            if not request.is_json:
+                abort(make_response(jsonify({"error": "Not a JSON"}), 400))
+            req = request.get_json()
+            for k, v in req.items():
+                if k != "id" and k != "created_at" and k != "updated_at":
+                    setattr(state_object, k, v)
+            storage.save()
+            return jsonify(state_object.to_dict()), 200
+        elif request.method == "DELETE":
+            storage.delete(state_object)
+            storage.save()
+            return jsonify({}), 200
     except BaseException:
         raise
