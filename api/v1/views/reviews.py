@@ -75,7 +75,8 @@ def get_reviews(review_id):
                 abort(make_response(jsonify({"error": "Not a JSON"}), 400))
             req = request.get_json()
             for k, v in req.items():
-                if k != "id" and k != "created_at" and k != "updated_at" and k != "user_id" and k!= "place_id":
+                if k != "id" and k != "created_at" and k != "updated_at" \
+                        and k != "user_id" and k != "place_id":
                     setattr(city_object, k, v)
             storage.save()
             return jsonify(city_object.to_dict()), 200
