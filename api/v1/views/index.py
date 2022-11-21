@@ -23,7 +23,7 @@ classes = {'Amenity': Amenity,
 @app_views.route('/status', strict_slashes=False)
 def status():
     """return status."""
-    return jsonify({'status':'OK'})
+    return jsonify({'status': 'OK'})
 
 
 @app_views.route('/stats', strict_slashes=False)
@@ -34,4 +34,3 @@ def stats():
         count = storage.count(cls)
         results[cls.__name__.lower()] = count
     return jsonify(results)
-
