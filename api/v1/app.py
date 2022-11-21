@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """ Module to create a flask server """
 
-from flask import Flask, g, jsonify, json
+from flask import Flask, g, json, make_response
 from models import storage
 from api.v1.views import app_views
 from os import getenv
@@ -33,15 +33,18 @@ def teardown_storage(exception):
 def handle_errors(e: Exception):
     """ Returns JSON instead of HTML error page on any kind of error """
     if isinstance(e, HTTPException):
-        return jsonify({"error": "Not found"}), e.code
-    response = e.get_response()
-    response.data = json.dump({
-        "code": e.code,
-        "name": e.name,
-        "description": e.description
-    })
-    response.content_type = "application/json"
-    return response
+        if e.code == 404:
+            return json.jsonify({"error": e.name}), e.code
+        else:
+            response = make_response()
+            response.data = json.dumps({
+                "code": e.code,
+                "name": e.name,
+                "description": e.description
+            })
+            response.content_type = "application/json"
+            return response
+    return json.jsonify({"error": e.args[0]}), 400
 
 
 if __name__ == "__main__":
