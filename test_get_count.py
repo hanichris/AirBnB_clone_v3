@@ -9,4 +9,4 @@ print("All objects: {}".format(storage.count()))
 print("User objects: {}".format(storage.count(User)))
 
 first_state_id = list(storage.all(User).values())[0].id
-print("First user: {}".format(storage.get(User, first_state_id)))
+print("First user: {}".format(type(storage.get(User, first_state_id))))
