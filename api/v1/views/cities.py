@@ -58,7 +58,7 @@ def create_city(state_id):
     if response is None:
         return jsonify({'error': 'Not a JSON'}), 400
     if 'name' not in response:
-        return jsonify({'error': 'Missing Name'}), 400
+        return jsonify({'error': 'Missing name'}), 400
     if state_obj is None:
         return jsonify({'error': 'Not found'}), 404
     response['state_id'] = state_id

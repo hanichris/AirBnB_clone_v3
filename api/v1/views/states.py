@@ -51,7 +51,7 @@ def create_state():
     if response is None:
         return jsonify({'error': 'Not a JSON'}), 400
     if 'name' not in response:
-        return jsonify({'error': 'Missing Name'}), 400
+        return jsonify({'error': 'Missing name'}), 400
     state_obj = State(name=response['name'])
     state_obj.save()
     return jsonify(state_obj.to_dict()), 201
