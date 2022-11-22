@@ -47,7 +47,7 @@ class DBStorage:
             if cls is None or cls is classes[clss] or cls is clss:
                 objs = self.__session.query(classes[clss]).all()
                 for obj in objs:
-                    key = f"{obj.__class__.__name__}.{obj.id}"
+                    key = obj.__class__.__name__ + '.' + obj.id
                     new_dict[key] = obj
         return (new_dict)
 
@@ -71,23 +71,37 @@ class DBStorage:
         Session = scoped_session(sess_factory)
         self.__session = Session
 
+    def get(self, cls, id):
+        """Retrieve an object from the database.
+
+        The object to be retrieved is based on the `class` and `id`
+        or None if not found.
+        Args:
+            cls (class): The class of the object to be retrieved.
+            id (string): string representing the object ID.
+        Return:
+            object or None.
+        """
+        return self.__session.query(cls).get(id)
+
+    def count(self, cls=None):
+        """Count the number of objects in storage.
+
+        Counts the number of objects in storage matching the given
+        class. If no class is passed, count all the objects in storage.
+        Args:
+            cls (class): class of the objects of interest.
+        Returns:
+            Total number of objects in storage(overall or
+            of partiuclar class).
+        """
+        if cls is not None:
+            return self.__session.query(func.count(cls.id)).scalar()
+        count = 0
+        for clss in classes.values():
+            count += self.__session.query(func.count(clss.id)).scalar()
+        return count
+
     def close(self):
         """ Call remove() method on the private session attribute """
         self.__session.remove()
-
-    def get(self, cls, id):
-        """ Retrieves one object from storage """
-        for instance in self.__session.query(cls).all():
-            if instance.id == id:
-                return instance
-
-    def count(self, cls=None):
-        """ Count the number of objects in storage """
-        if cls is not None:
-            return self.__session.query(
-                func.count("*")).select_from(cls).scalar()
-        counter = 0
-        for _cls in classes:
-            counter += self.__session.query(func.count("*")
-                                            ).select_from(classes[_cls]).scalar()
-        return counter

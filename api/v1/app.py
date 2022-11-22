@@ -1,53 +1,30 @@
 #!/usr/bin/python3
-""" Module to create a flask server """
-
-from flask import Flask, g, json, make_response
+"""Start of the Flask API."""
+from api.v1.views import app_views
+from flask import Flask, jsonify
 from flask_cors import CORS
 from models import storage
-from api.v1.views import app_views
 from os import getenv
-from werkzeug.exceptions import HTTPException
+
 
 app = Flask(__name__)
 app.register_blueprint(app_views)
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
 
-host = getenv("HBNB_API_HOST", "0.0.0.0")
-port = getenv("HBNB_API_PORT", "5000")
-
-
-def get_storage():
-    """ Creates a resource for the storage engine """
-    if "storage" not in g:
-        g.storage = storage
-    return g.storage
-
-
 @app.teardown_appcontext
-def teardown_storage(exception):
-    """ Deallocates the resource used as storage engine """
-    _storage = g.pop("storage", None)
-    if _storage is not None:
-        _storage.close()
+def teardown_storage(self):
+    storage.close()
 
-
-@app.errorhandler(Exception)
-def handle_errors(e: Exception):
-    """ Returns JSON instead of HTML error page on any kind of error """
-    if isinstance(e, HTTPException):
-        if e.code == 404:
-            return json.jsonify({"error": e.name}), e.code
-        else:
-            response = make_response()
-            response.data = json.dumps({
-                "code": e.code,
-                "name": e.name,
-                "description": e.description
-            })
-            response.content_type = "application/json"
-            return response
-    return json.jsonify({"error": e.args[0]}), 400
-
+@app.errorhandler(404)
+def resource_not_found(e):
+    return jsonify({'error': 'Not found'}), 404
 
 if __name__ == "__main__":
-    app.run(host=host, port=port, threaded=True, debug=True)
+    HBNB_API_HOST = getenv('HBNB_API_HOST')
+    HBNB_API_PORT = getenv('HBNB_API_PORT')
+    app.run(
+            host= HBNB_API_HOST or '0.0.0.0',
+            port = HBNB_API_PORT or '5000',
+            threaded=True
+            )

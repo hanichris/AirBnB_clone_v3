@@ -1,4 +1,5 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
+/.gitignore
 
 # VS Code files for those working on multiple tools
 .vscode/
@@ -9,8 +10,10 @@
 *.code-workspace
 
 # Python Tools for Visual Studio (PTVS)
+models/engine/__pycache__/
 __pycache__/
 *.pyc
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -27,3 +30,4 @@ bld/
 [Ll]og/
 [Ll]ogs/
 file.json
+
