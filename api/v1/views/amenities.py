@@ -1,16 +1,19 @@
 #!/usr/bin/python3
-""" Module to define blueprint view for State objects """
+""" Module to define blueprint view for Amenity objects """
 
 from api.v1.views.__init__ import app_views
 from api.v1.app import get_storage
 from models.amenity import Amenity
 from flask import jsonify, request, abort, make_response
-from uuid import uuid4
 
 
 @app_views.route("/amenities", methods=["GET", "POST"], strict_slashes=False)
 def list_amenities():
-    """ Returns all Amenity objects """
+    """
+        Returns all Amenity objects for `GET` requests,
+        or the created Amenity object for `POST` requests,
+        otherwise raises an exception.
+    """
     storage = get_storage()
     list_objects = []
     new_list_objects = []
@@ -31,14 +34,10 @@ def list_amenities():
             if req.get("name") is None:
                 abort(make_response(
                     jsonify({"error": "Missing name"}), 400))
-            if req.get("id") is None:
-                amenity_id = str(uuid4())
-                req.update({"id": amenity_id})
-            else:
-                amenity_id = req.get("id")
-            storage.new(Amenity(**req))
+            amenity_obj = Amenity(**req)
+            storage.new(amenity_obj)
             storage.save()
-            return jsonify(storage.get(Amenity, amenity_id).to_dict()), 201
+            return jsonify(amenity_obj.to_dict()), 201
     except BaseException:
         raise
 
@@ -46,17 +45,24 @@ def list_amenities():
 @app_views.route("/amenities/<amenity_id>",
                  methods=["GET", "POST", "PUT", "DELETE"], strict_slashes=False)
 def amenities(amenity_id):
-    """ Performs the operation from method on the Amenity from given id """
+    """
+    Args:
+        amenity_id (string): Amenity object identifier.
+
+    Returns:
+        A dictionary represenatation of the Amenity object
+        with the given id for `GET` requests,
+        or the updated Amenity object with the given id for `PUT` requests,
+        or an empty dictionary for `DELETE` requests,
+        otherwise raises an exception.
+
+    """
     storage = get_storage()
-    list_objects = []
-    new_list_objects = []
     try:
-        if storage is None or not isinstance(
-                amenity_id, str) or storage.get(Amenity, amenity_id) is None:
+        if storage is None or not isinstance(amenity_id, str) \
+                or storage.get(Amenity, amenity_id) is None:
             abort(404)
         amenity_object = storage.get(Amenity, amenity_id)
-        if amenity_object is None:
-            raise
         if request.method == "GET":
             return jsonify(amenity_object.to_dict())
         elif request.method == "PUT":

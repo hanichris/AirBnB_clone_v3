@@ -1,17 +1,20 @@
 #!/usr/bin/python3
-""" Module to define blueprint view for State objects """
+""" Module to define blueprint view for User objects """
 
 from api.v1.views.__init__ import app_views
 from api.v1.app import get_storage
 from models.user import User
 from flask import jsonify, request, abort, make_response
-from uuid import uuid4
 
 
 @app_views.route("/users",
                  methods=["GET", "POST"], strict_slashes=False)
 def users():
-    """ Returns or creates User objects belonging from given id """
+    """
+        Returns all User objects for `GET` requests,
+        or the created User object for `POST` requests,
+        otherwise raises an exception.
+    """
     storage = get_storage()
     list_objects = []
     new_list_objects = []
@@ -32,14 +35,10 @@ def users():
             if req.get("email") is None or req.get("password") is None:
                 abort(make_response(
                     jsonify({"error": "Missing name"}), 400))
-            if req.get("id") is None:
-                user_id = str(uuid4())
-                req.update({"id": user_id})
-            else:
-                user_id = req.get("id")
-            storage.new(User(**req))
+            user_obj = User(**req)
+            storage.new(user_obj)
             storage.save()
-            return jsonify(storage.get(User, user_id).to_dict()), 201
+            return jsonify(user_obj.to_dict()), 201
     except BaseException:
         raise
 
@@ -47,15 +46,24 @@ def users():
 @app_views.route("/users/<user_id>",
                  methods=["GET", "PUT", "DELETE"], strict_slashes=False)
 def get_user(user_id):
-    """ Performs the operation from method on the User from given User id """
+    """
+    Args:
+        user_id (string): User object identifier.
+
+    Returns:
+        A dictionary represenatation of the User object
+        with the given id for `GET` requests,
+        or the updated User object with the given id for `PUT` requests,
+        or an empty dictionary for `DELETE` requests,
+        otherwise raises an exception.
+
+    """
     storage = get_storage()
     try:
-        if storage is None or not isinstance(
-                user_id, str) or storage.get(User, user_id) is None:
+        if storage is None or not isinstance(user_id, str) \
+                or storage.get(User, user_id) is None:
             abort(404)
         user_object = storage.get(User, user_id)
-        if user_object is None or not isinstance(user_id, str):
-            raise
         if request.method == "GET":
             return jsonify(user_object.to_dict())
         elif request.method == "PUT":
@@ -63,7 +71,8 @@ def get_user(user_id):
                 abort(make_response(jsonify({"error": "Not a JSON"}), 400))
             req = request.get_json()
             for k, v in req.items():
-                if k != "id" and k != "created_at" and k != "updated_at" and k != "email":
+                if k != "id" and k != "created_at" and k != "updated_at" \
+                        and k != "email":
                     setattr(user_object, k, v)
             storage.save()
             return jsonify(user_object.to_dict()), 200

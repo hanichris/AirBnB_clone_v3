@@ -9,11 +9,9 @@ from os import getenv
 from werkzeug.exceptions import HTTPException
 
 app = Flask(__name__)
-app.register_blueprint(app_views)
+app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
-
-host = getenv("HBNB_API_HOST", "0.0.0.0")
-port = getenv("HBNB_API_PORT", "5000")
+app.register_blueprint(app_views)
 
 
 def get_storage():
@@ -31,23 +29,27 @@ def teardown_storage(exception):
         _storage.close()
 
 
+@app.errorhandler(404)
+def resource_not_found(e: HTTPException):
+    return json.jsonify({'error': 'Not found'}), 404
+
+
 @app.errorhandler(Exception)
 def handle_errors(e: Exception):
     """ Returns JSON instead of HTML error page on any kind of error """
     if isinstance(e, HTTPException):
-        if e.code == 404:
-            return json.jsonify({"error": e.name}), e.code
-        else:
-            response = make_response()
-            response.data = json.dumps({
-                "code": e.code,
-                "name": e.name,
-                "description": e.description
-            })
-            response.content_type = "application/json"
-            return response
+        response = make_response()
+        response.data = json.dumps({
+            "code": e.code,
+            "name": e.name,
+            "description": e.description
+        })
+        response.content_type = "application/json"
+        return response
     return json.jsonify({"error": e.args[0]}), 400
 
 
 if __name__ == "__main__":
-    app.run(host=host, port=port, threaded=True, debug=True)
+    host = getenv("HBNB_API_HOST", "0.0.0.0")
+    port = getenv("HBNB_API_PORT", "5000")
+    app.run(host=host, port=port, threaded=True, debug=False)
