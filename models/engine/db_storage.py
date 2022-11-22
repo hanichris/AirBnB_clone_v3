@@ -89,5 +89,6 @@ class DBStorage:
         counter = 0
         for _cls in classes:
             counter += self.__session.query(func.count("*")
-                                            ).select_from(classes[_cls]).scalar()
+                                            ).select_from(
+                                                classes[_cls]).scalar()
         return counter
