@@ -15,12 +15,10 @@ def reviews(place_id):
     """
     Args:
         place_id (string): Place object identifier.
-
     Returns:
         A list of all Review objects with given Place id for `GET` requests,
         or the created Review object for a given Place id in `POST` requests,
         otherwise raises an exception.
-
     """
     storage = get_storage()
     list_objects = []
@@ -64,14 +62,12 @@ def get_reviews(review_id):
     """
     Args:
         review_id (string): Review object identifier.
-
     Returns:
         A dictionary represenatation of the Review object
         with the given id for `GET` requests,
         or the updated Review object with the given id for `PUT` requests,
         or an empty dictionary for `DELETE` requests,
         otherwise raises an exception.
-
     """
     storage = get_storage()
     try:

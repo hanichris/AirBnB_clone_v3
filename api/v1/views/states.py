@@ -1,11 +1,8 @@
 #!/usr/bin/python3
-"""View for State objects.
+""" Module to define blueprint view for State objects """
 
-It handles all default RESTful API actions.
-"""
-from api.v1.views import app_views
-from flask import jsonify, request
-from models import storage
+from api.v1.views.__init__ import app_views
+from api.v1.app import get_storage
 from models.state import State
 from flask import jsonify, request, abort, make_response
 

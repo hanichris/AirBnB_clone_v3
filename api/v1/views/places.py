@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 """ Module to define blueprint view for Place objects """
 
-from api.v1.views import app_views
-from flask import jsonify, request
-from models import storage
+from api.v1.views.__init__ import app_views
+from api.v1.app import get_storage
+from models.city import City
 from models.place import Place
-from models.review import Review
 from models.user import User
 from flask import jsonify, request, abort, make_response
 

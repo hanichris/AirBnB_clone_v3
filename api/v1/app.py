@@ -1,10 +1,12 @@
 #!/usr/bin/python3
-"""Start of the Flask API."""
-from api.v1.views import app_views
-from flask import Flask, jsonify
+""" Module to create a flask server """
+
+from flask import Flask, g, json, make_response
 from flask_cors import CORS
 from models import storage
+from api.v1.views import app_views
 from os import getenv
+from werkzeug.exceptions import HTTPException
 
 
 app = Flask(__name__)
