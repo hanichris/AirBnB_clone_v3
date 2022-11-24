@@ -8,9 +8,16 @@ from os import getenv
 
 
 app = Flask(__name__)
-app.register_blueprint(app_views)
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
+app.register_blueprint(app_views)
+
+
+def get_storage():
+    """ Creates a resource for the storage engine """
+    if "storage" not in g:
+        g.storage = storage
+    return g.storage
 
 
 @app.teardown_appcontext
@@ -19,14 +26,26 @@ def teardown_storage(self):
 
 
 @app.errorhandler(404)
-def resource_not_found(e):
-    return jsonify({'error': 'Not found'}), 404
+def resource_not_found(e: HTTPException):
+    return json.jsonify({'error': 'Not found'}), 404
+
+
+@app.errorhandler(Exception)
+def handle_errors(e: Exception):
+    """ Returns JSON instead of HTML error page on any kind of error """
+    if isinstance(e, HTTPException):
+        response = make_response()
+        response.data = json.dumps({
+            "code": e.code,
+            "name": e.name,
+            "description": e.description
+        })
+        response.content_type = "application/json"
+        return response
+    return json.jsonify({"error": e.args[0]}), 400
+
 
 if __name__ == "__main__":
-    HBNB_API_HOST = getenv('HBNB_API_HOST')
-    HBNB_API_PORT = getenv('HBNB_API_PORT')
-    app.run(
-            host=HBNB_API_HOST or '0.0.0.0',
-            port=HBNB_API_PORT or '5000',
-            threaded=True
-            )
+    host = getenv("HBNB_API_HOST", "0.0.0.0")
+    port = getenv("HBNB_API_PORT", "5000")
+    app.run(host=host, port=port, threaded=True, debug=False)
