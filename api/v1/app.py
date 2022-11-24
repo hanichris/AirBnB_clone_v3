@@ -23,8 +23,11 @@ def get_storage():
 
 
 @app.teardown_appcontext
-def teardown_storage(self):
-    storage.close()
+def teardown_storage(exception):
+    """ Deallocates the resource used as storage engine """
+    _storage = g.pop("storage", None)
+    if _storage is not None:
+        _storage.close()
 
 
 @app.errorhandler(404)

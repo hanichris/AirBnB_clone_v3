@@ -3,16 +3,14 @@
 Contains the class DBStorage
 """
 
-import models
 from models.amenity import Amenity
-from models.base_model import BaseModel, Base
+from models.base_model import Base
 from models.city import City
 from models.place import Place
 from models.review import Review
 from models.state import State
 from models.user import User
 from os import getenv
-import sqlalchemy
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -47,7 +45,7 @@ class DBStorage:
             if cls is None or cls is classes[clss] or cls is clss:
                 objs = self.__session.query(classes[clss]).all()
                 for obj in objs:
-                    key = obj.__class__.__name__ + '.' + obj.id
+                    key = f"{obj.__class__.__name__}.{obj.id}"
                     new_dict[key] = obj
         return (new_dict)
 
@@ -71,42 +69,9 @@ class DBStorage:
         Session = scoped_session(sess_factory)
         self.__session = Session
 
-    def get(self, cls, id):
-        """Retrieve an object from the database.
-
-        The object to be retrieved is based on the `class` and `id`
-        or None if not found.
-        Args:
-            cls (class): The class of the object to be retrieved.
-            id (string): string representing the object ID.
-        Return:
-            object or None.
-        """
-        return self.__session.query(cls).get(id)
-
-    def count(self, cls=None):
-        """Count the number of objects in storage.
-
-        Counts the number of objects in storage matching the given
-        class. If no class is passed, count all the objects in storage.
-        Args:
-            cls (class): class of the objects of interest.
-        Returns:
-            Total number of objects in storage(overall or
-            of partiuclar class).
-        """
-        if cls is not None:
-            return self.__session.query(func.count(cls.id)).scalar()
-        count = 0
-        for clss in classes.values():
-            count += self.__session.query(func.count(clss.id)).scalar()
-        return count
-
     def close(self):
         """ Call remove() method on the private session attribute """
         self.__session.remove()
-<<<<<<< HEAD
-=======
 
     def get(self, cls, id):
         """ Retrieves one object from storage """
@@ -125,4 +90,3 @@ class DBStorage:
                                             ).select_from(
                                                 classes[_cls]).scalar()
         return counter
->>>>>>> nick
